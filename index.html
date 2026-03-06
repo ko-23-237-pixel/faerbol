@@ -1,332 +1,580 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создать заявку</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #0066ff;
-            --primary-dark: #0055dd;
-            --bg: #f0f2f5;
-            --card: #ffffff;
-            --text: #1c1e21;
-            --border: #dddfe2;
-            --danger: #e63946;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container { max-width: 600px; margin: 0 auto; }
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            padding: 24px;
-        }
-        h1 { font-size: 1.8rem; margin-bottom: 24px; text-align: center; }
-        .form-group { margin-bottom: 20px; }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
-        }
-        .file-input-wrapper {
-            position: relative;
-        }
-        .file-name {
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: #555;
-        }
-        .btn {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.05rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-primary:disabled {
-            background: #aaa;
-            cursor: not-allowed;
-        }
-        .auth-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 16px 0;
-            text-align: center;
-        }
-        .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 16px 0;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Чат с личными сообщениями</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #0066ff;
+      --primary-dark: #0055cc;
+      --bg: #f0f2f5;
+      --card: white;
+      --text: #1c1e21;
+      --text-secondary: #65676b;
+      --border: #dddfe2;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 16px;
+      color: var(--text);
+    }
+
+    .container { max-width: 720px; margin: 0 auto; }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .auth-section {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-danger  { background: #e63946; color: white; }
+    .btn-danger:hover  { background: #d00000; }
+
+    h2 { margin: 0 0 16px; font-size: 1.35rem; padding: 0 16px; }
+
+    .users-list .user-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .users-list .user-item:hover,
+    .users-list .user-item.active {
+      background: #e7f3ff;
+    }
+
+    .chat-section { display: none; }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #f8f9fa;
+    }
+
+    .messages {
+      min-height: 300px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #fafafa;
+    }
+
+    .message {
+      display: flex;
+      max-width: 80%;
+      gap: 8px;
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-content {
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: #e1e8ed;
+      word-break: break-word;
+    }
+
+    .message.sent .message-content {
+      background: var(--primary);
+      color: white;
+    }
+
+    .message img,
+    .message video {
+      max-width: 240px;
+      border-radius: 12px;
+      margin-top: 6px;
+      display: block;
+    }
+
+    .message-file a {
+      color: #0066ff;
+      text-decoration: underline;
+      font-size: 0.95rem;
+    }
+
+    .message-time {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      font-size: 15px;
+      min-width: 0;
+    }
+
+    .file-attach-label {
+      cursor: pointer;
+      padding: 10px;
+      color: #666;
+      font-size: 1.4rem;
+    }
+
+    .file-attach-label:hover { color: var(--primary); }
+
+    .attached-file-name {
+      font-size: 0.85rem;
+      color: #555;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card">
 
-        <h1>Создать заявку</h1>
-
-        <!-- Блок авторизации -->
-        <div class="auth-section">
-            <div id="loginBlock">
-                <button id="loginBtn" class="btn btn-primary">
-                    <i class="fab fa-google"></i> Войти через Google
-                </button>
-            </div>
-            <div id="userBlock" style="display:none;">
-                <div class="user-info">
-                    <img id="userPhoto" class="avatar" src="" alt="">
-                    <span id="userName"></span>
-                </div>
-                <button id="logoutBtn" class="btn" style="background:#e63946; color:white;">Выйти</button>
-            </div>
-        </div>
-
-        <!-- Форма (показывается только после входа) -->
-        <form id="applicationForm" style="display:none;">
-            <div class="form-group">
-                <label for="fullName">ФИО</label>
-                <input type="text" id="fullName" placeholder="Максим Иванов" required>
-            </div>
-
-            <div class="form-group">
-                <label for="age">Возраст</label>
-                <input type="text" id="age" placeholder="43" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="example@domain.kz" required>
-            </div>
-
-            <div class="form-group">
-                <label for="fileInput">Прикрепить файл</label>
-                <div class="file-input-wrapper">
-                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                </div>
-                <div id="fileName" class="file-name">Файл не выбран</div>
-            </div>
-
-            <div class="form-group">
-                <label for="comment">Комментарий / описание</label>
-                <textarea id="comment" rows="4" placeholder="Дополнительная информация..."></textarea>
-            </div>
-
-            <button type="submit" id="submitBtn" class="btn btn-primary" style="width:100%;">
-                Отправить заявку
-            </button>
-        </form>
-
-        <div id="errorContainer" class="error-message" style="display:none;"></div>
-        <div id="successContainer" class="success-message" style="display:none;"></div>
-
+  <!-- Авторизация -->
+  <div class="card auth-section">
+    <div id="loginBlock">
+      <button id="loginBtn" class="btn btn-primary">
+        <i class="fab fa-google"></i> Войти через Google
+      </button>
     </div>
+    <div id="userBlock" style="display:none;">
+      <div class="user-info">
+        <img id="userPhoto" class="avatar" src="" alt="">
+        <span id="userName"></span>
+      </div>
+      <button id="logoutBtn" class="btn btn-danger">Выйти</button>
+    </div>
+  </div>
+
+  <!-- Список пользователей -->
+  <div class="card">
+    <h2><i class="fas fa-users"></i> С кем пообщаться?</h2>
+    <div id="usersList" class="users-list">
+      <div style="padding:20px; text-align:center; color:#777;">Загрузка...</div>
+    </div>
+  </div>
+
+  <!-- Окно чата -->
+  <div class="card chat-section" id="chatSection">
+    <div class="chat-header">
+      <img id="currentChatAvatar" class="avatar" src="" alt="">
+      <div style="flex:1">
+        <strong id="currentChatName"></strong>
+      </div>
+      <button id="closeChatBtn" class="btn" style="background:#6c757d; color:white;">✕</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Напишите сообщение..."/>
+      <label for="fileAttach" class="file-attach-label" title="Прикрепить файл или фото">
+        <i class="fas fa-paperclip"></i>
+      </label>
+      <input type="file" id="fileAttach" style="display:none;" accept="*/*"/>
+      <span id="attachedFileName" class="attached-file-name" style="display:none;"></span>
+      <button id="sendBtn" class="btn btn-primary">Отправить</button>
+    </div>
+  </div>
+
+  <div id="errorContainer" class="error-message" style="display:none;"></div>
+
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
-    import { 
-        getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut 
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-    import { 
-        getFirestore, collection, addDoc, serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-    import { 
-        getStorage, ref, uploadBytes, getDownloadURL 
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+  // ────────────────────────────────────────────────
+  // Импорты Firebase
+  // ────────────────────────────────────────────────
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, setDoc, getDoc, onSnapshot, addDoc, updateDoc,
+    serverTimestamp, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBTYxqJJwlH82dnQdIr85j4z-CECBK4xJQ",
-        authDomain: "named-vine-444211-p3.firebaseapp.com",
-        projectId: "named-vine-444211-p3",
-        storageBucket: "named-vine-444211-p3.firebasestorage.app",
-        messagingSenderId: "120244119099",
-        appId: "1:120244119099:web:114c26adfaeb8492325e1e",
-        measurementId: "G-VQ5YQPQB36"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTYxqJJwlH82dnQdIr85j4z-CECBK4xJQ",
+    authDomain: "named-vine-444211-p3.firebaseapp.com",
+    projectId: "named-vine-444211-p3",
+    storageBucket: "named-vine-444211-p3.firebasestorage.app",
+    messagingSenderId: "120244119099",
+    appId: "1:120244119099:web:114c26adfaeb8492325e1e",
+    measurementId: "G-VQ5YQPQB36"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    getAnalytics(app);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
 
-    const provider = new GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
 
-    // DOM
-    const els = {
-        loginBtn: document.getElementById('loginBtn'),
-        logoutBtn: document.getElementById('logoutBtn'),
-        loginBlock: document.getElementById('loginBlock'),
-        userBlock: document.getElementById('userBlock'),
-        userPhoto: document.getElementById('userPhoto'),
-        userName: document.getElementById('userName'),
-        form: document.getElementById('applicationForm'),
-        fullName: document.getElementById('fullName'),
-        age: document.getElementById('age'),
-        email: document.getElementById('email'),
-        fileInput: document.getElementById('fileInput'),
-        fileName: document.getElementById('fileName'),
-        comment: document.getElementById('comment'),
-        submitBtn: document.getElementById('submitBtn'),
-        errorContainer: document.getElementById('errorContainer'),
-        successContainer: document.getElementById('successContainer')
-    };
+  // ────────────────────────────────────────────────
+  // DOM элементы
+  // ────────────────────────────────────────────────
+  const els = {
+    loginBtn: document.getElementById('loginBtn'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    loginBlock: document.getElementById('loginBlock'),
+    userBlock: document.getElementById('userBlock'),
+    userPhoto: document.getElementById('userPhoto'),
+    userName: document.getElementById('userName'),
+    usersList: document.getElementById('usersList'),
+    chatSection: document.getElementById('chatSection'),
+    messages: document.getElementById('messages'),
+    messageInput: document.getElementById('messageInput'),
+    fileAttach: document.getElementById('fileAttach'),
+    attachedFileName: document.getElementById('attachedFileName'),
+    sendBtn: document.getElementById('sendBtn'),
+    currentChatAvatar: document.getElementById('currentChatAvatar'),
+    currentChatName: document.getElementById('currentChatName'),
+    closeChatBtn: document.getElementById('closeChatBtn'),
+    errorContainer: document.getElementById('errorContainer')
+  };
 
-    let currentUser = null;
+  let currentUser = null;
+  let currentChatUser = null;
+  let unsubscribeChat = null;
+  let unsubscribeUsers = null;
 
-    function showError(msg) {
-        els.errorContainer.textContent = msg;
-        els.errorContainer.style.display = 'block';
-        setTimeout(() => els.errorContainer.style.display = 'none', 7000);
+  function showError(msg, ms = 6000) {
+    els.errorContainer.textContent = msg;
+    els.errorContainer.style.display = 'block';
+    setTimeout(() => els.errorContainer.style.display = 'none', ms);
+  }
+
+  // ─── Авторизация ────────────────────────────────────────
+  els.loginBtn.onclick = async () => {
+    try {
+      els.loginBtn.disabled = true;
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      showError(err.code === "auth/popup-blocked"
+        ? "Браузер заблокировал всплывающее окно"
+        : "Ошибка входа: " + err.message);
+    } finally {
+      els.loginBtn.disabled = false;
     }
+  };
 
-    function showSuccess(msg) {
-        els.successContainer.textContent = msg;
-        els.successContainer.style.display = 'block';
-        setTimeout(() => {
-            els.successContainer.style.display = 'none';
-            els.form.reset();
-            els.fileName.textContent = "Файл не выбран";
-        }, 5000);
+  els.logoutBtn.onclick = () => signOut(auth);
+
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+
+    if (user) {
+      els.loginBlock.style.display = 'none';
+      els.userBlock.style.display = 'block';
+      els.userPhoto.src = user.photoURL || 'https://via.placeholder.com/48';
+      els.userName.textContent = user.displayName || 'Пользователь';
+
+      loadUsers();
+    } else {
+      els.loginBlock.style.display = 'block';
+      els.userBlock.style.display = 'none';
+      els.chatSection.style.display = 'none';
+      els.usersList.innerHTML = '<div style="padding:30px; text-align:center;">Войдите, чтобы увидеть пользователей</div>';
+
+      if (unsubscribeUsers) unsubscribeUsers();
+      if (unsubscribeChat) unsubscribeChat();
     }
+  });
 
-    // Авторизация
-    els.loginBtn.onclick = async () => {
-        try {
-            els.loginBtn.disabled = true;
-            await signInWithPopup(auth, provider);
-        } catch (err) {
-            showError("Ошибка входа: " + (err.code === "auth/popup-blocked" ? "Разрешите всплывающие окна" : err.message));
-        } finally {
-            els.loginBtn.disabled = false;
-        }
-    };
+  // ─── Загрузка списка пользователей ──────────────────────
+  function loadUsers() {
+    unsubscribeUsers = onSnapshot(collection(db, "users"), snap => {
+      if (!currentUser) return;
 
-    els.logoutBtn.onclick = () => signOut(auth);
+      const users = [];
+      snap.forEach(d => {
+        const u = d.data();
+        if (u.uid !== currentUser.uid) users.push(u);
+      });
 
-    onAuthStateChanged(auth, user => {
-        currentUser = user;
+      els.usersList.innerHTML = users.length === 0
+        ? '<div style="padding:30px; text-align:center; color:#777;">Пока никого нет</div>'
+        : '';
 
-        if (user) {
-            els.loginBlock.style.display = 'none';
-            els.userBlock.style.display = 'block';
-            els.userPhoto.src = user.photoURL || 'https://via.placeholder.com/48';
-            els.userName.textContent = user.displayName || 'Пользователь';
-            els.form.style.display = 'block';
+      users.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        if (currentChatUser?.uid === u.uid) item.classList.add('active');
 
-            // Предзаполняем email
-            els.email.value = user.email || '';
-        } else {
-            els.loginBlock.style.display = 'block';
-            els.userBlock.style.display = 'none';
-            els.form.style.display = 'none';
-        }
+        item.innerHTML = `
+          <img class="avatar" src="${u.photoURL || 'https://via.placeholder.com/50'}" alt="">
+          <div style="flex:1">
+            <div style="font-weight:600">${u.displayName || 'Пользователь'}</div>
+            <div style="font-size:0.85rem; color:var(--text-secondary)">${u.email || ''}</div>
+          </div>
+          <button class="btn btn-primary start-chat">Написать</button>
+        `;
+
+        item.querySelector('.start-chat').onclick = e => {
+          e.stopPropagation();
+          startChat(u);
+        };
+
+        els.usersList.appendChild(item);
+      });
+    }, err => {
+      console.error(err);
+      els.usersList.innerHTML = '<div style="padding:20px; color:red;">Ошибка загрузки пользователей</div>';
     });
+  }
 
-    // Показываем имя выбранного файла
-    els.fileInput.onchange = () => {
-        const file = els.fileInput.files[0];
-        els.fileName.textContent = file ? file.name : "Файл не выбран";
-    };
+  // ─── Создание / получение чата ──────────────────────────
+  async function ensureChatExists(chatId) {
+    const chatRef = doc(db, "chats", chatId);
+    const snap = await getDoc(chatRef);
 
-    // Отправка формы
-    els.form.onsubmit = async (e) => {
-        e.preventDefault();
-        if (!currentUser) return showError("Сначала войдите в аккаунт");
+    if (!snap.exists()) {
+      await setDoc(chatRef, {
+        participants: [currentUser.uid, currentChatUser.uid],
+        createdAt: serverTimestamp(),
+        lastMessage: null,
+        lastMessageTime: serverTimestamp()
+      });
+    }
+  }
 
-        const fullName = els.fullName.value.trim();
-        const age = els.age.value.trim();
-        const email = els.email.value.trim();
-        const comment = els.comment.value.trim();
-        const file = els.fileInput.files[0];
+  // ─── Открытие чата ──────────────────────────────────────
+  function startChat(user) {
+    if (currentChatUser?.uid === user.uid) return;
+    currentChatUser = user;
 
-        if (!fullName || !age || !email) {
-            return showError("Заполните обязательные поля: ФИО, возраст, email");
+    els.chatSection.style.display = 'block';
+    els.currentChatAvatar.src = user.photoURL || 'https://via.placeholder.com/48';
+    els.currentChatName.textContent = user.displayName || 'Пользователь';
+
+    const chatId = [currentUser.uid, user.uid].sort().join('_');
+
+    if (unsubscribeChat) unsubscribeChat();
+
+    els.messages.innerHTML = '<div style="padding:40px; text-align:center; color:#777;">Загрузка сообщений...</div>';
+
+    ensureChatExists(chatId).then(() => {
+      const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp"));
+      unsubscribeChat = onSnapshot(q, snap => {
+        if (snap.empty) {
+          els.messages.innerHTML = '<div style="padding:40px; text-align:center; color:#777;">Нет сообщений. Напишите первое!</div>';
+          return;
         }
 
-        els.submitBtn.disabled = true;
-        els.submitBtn.textContent = "Отправка...";
+        els.messages.innerHTML = '';
+        snap.forEach(docSnap => {
+          const m = docSnap.data();
+          const isSent = m.senderId === currentUser.uid;
 
-        try {
-            let fileUrl = null;
+          const div = document.createElement('div');
+          div.className = `message ${isSent ? 'sent' : ''}`;
 
-            // Если есть файл — загружаем в Storage
-            if (file) {
-                const storageRef = ref(storage, `applications/${currentUser.uid}/${Date.now()}_${file.name}`);
-                const uploadTask = await uploadBytes(storageRef, file);
-                fileUrl = await getDownloadURL(uploadTask.ref);
+          let content = `<div class="message-content">`;
+
+          if (m.text) content += `<div>${m.text}</div>`;
+
+          if (m.fileUrl) {
+            if (m.type === 'image') {
+              content += `<img src="${m.fileUrl}" alt="Фото" loading="lazy">`;
+            } else if (m.type === 'video') {
+              content += `<video src="${m.fileUrl}" controls></video>`;
+            } else {
+              content += `
+                <div class="message-file">
+                  <a href="${m.fileUrl}" target="_blank" download>
+                    <i class="fas fa-file"></i> ${m.fileName || 'Файл'}
+                  </a>
+                </div>`;
             }
+          }
 
-            // Сохраняем в Firestore
-            await addDoc(collection(db, "applications"), {
-                userId: currentUser.uid,
-                fullName,
-                age,
-                email,
-                comment,
-                fileUrl,
-                createdAt: serverTimestamp(),
-                status: "new"
-            });
+          content += `
+            <div class="message-time">
+              ${m.timestamp ? m.timestamp.toDate().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : ''}
+              ${isSent ? ' ✓' : ''}
+            </div>
+          </div>`;
 
-            showSuccess("Заявка успешно отправлена!");
-        } catch (err) {
-            console.error(err);
-            showError("Ошибка при отправке: " + err.message);
-        } finally {
-            els.submitBtn.disabled = false;
-            els.submitBtn.textContent = "Отправить заявку";
-        }
-    };
+          div.innerHTML = `
+            <img class="avatar" src="${isSent ? currentUser.photoURL : (m.senderPhotoURL || user.photoURL || 'https://via.placeholder.com/36')}" alt="">
+            ${content}
+          `;
+
+          els.messages.appendChild(div);
+        });
+
+        els.messages.scrollTop = els.messages.scrollHeight;
+      });
+    });
+  }
+
+  // ─── Отправка сообщения ─────────────────────────────────
+  els.sendBtn.onclick = async () => {
+    if (!currentUser || !currentChatUser) return showError("Выберите собеседника");
+
+    const text = els.messageInput.value.trim();
+    const file = els.fileAttach.files[0];
+
+    if (!text && !file) return showError("Напишите сообщение или прикрепите файл");
+
+    const chatId = [currentUser.uid, currentChatUser.uid].sort().join('_');
+
+    await ensureChatExists(chatId);
+
+    els.sendBtn.disabled = true;
+    els.sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    try {
+      let fileUrl = null;
+      let fileName = null;
+      let type = text ? 'text' : 'file';
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) throw new Error("Файл слишком большой (макс. 10 МБ)");
+
+        fileName = file.name;
+        const path = `private-chats/${chatId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+        const fileRef = ref(storage, path);
+
+        await uploadBytes(fileRef, file);
+        fileUrl = await getDownloadURL(fileRef);
+
+        if (file.type.startsWith('image/')) type = 'image';
+        else if (file.type.startsWith('video/')) type = 'video';
+      }
+
+      const msgData = {
+        text: text || (file ? `Файл: ${fileName}` : ''),
+        senderId: currentUser.uid,
+        senderName: currentUser.displayName || 'Пользователь',
+        senderPhotoURL: currentUser.photoURL || '',
+        timestamp: serverTimestamp(),
+        type,
+        fileUrl,
+        fileName
+      };
+
+      await addDoc(collection(db, "chats", chatId, "messages"), msgData);
+
+      await updateDoc(doc(db, "chats", chatId), {
+        lastMessage: text || `Файл: ${fileName || 'прикреплён'}`,
+        lastMessageTime: serverTimestamp(),
+        lastSender: currentUser.uid
+      });
+
+      els.messageInput.value = '';
+      els.fileAttach.value = '';
+      els.attachedFileName.style.display = 'none';
+
+    } catch (err) {
+      console.error(err);
+      let msg = "Не удалось отправить";
+      if (err.message.includes("10 МБ")) msg = err.message;
+      else if (err.code?.includes("permission-denied")) msg = "Нет прав доступа (проверьте правила безопасности)";
+      showError(msg);
+    } finally {
+      els.sendBtn.disabled = false;
+      els.sendBtn.textContent = "Отправить";
+    }
+  };
+
+  // Показ имени файла
+  els.fileAttach.onchange = () => {
+    const f = els.fileAttach.files[0];
+    els.attachedFileName.textContent = f ? f.name : '';
+    els.attachedFileName.style.display = f ? 'inline' : 'none';
+  };
+
+  // Enter = отправить
+  els.messageInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      els.sendBtn.click();
+    }
+  });
+
+  els.closeChatBtn.onclick = () => {
+    currentChatUser = null;
+    els.chatSection.style.display = 'none';
+    if (unsubscribeChat) unsubscribeChat();
+  };
+
 </script>
 </body>
 </html>
