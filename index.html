@@ -1,61 +1,43 @@
-// Добавить в начало скрипта
-let currentUnsubscribe = null;  // лучшее имя переменной
+версия_правил = '2';
+сервис облако.firestore {
+ сопоставить /базы данных/{база данных}/документы {
 
-// В функции startChat заменить способ формирования chatId (чтобы было надёжнее)
-const chatId = [currentUser.uid, user.uid].sort().join('_');
+ соответствие /users/{uid} {
+ разрешить чтение: если request.auth!= ноль;
+ разрешить запись: если request.auth!= null && request.auth.uid == uid;
+ разрешить создание: если request.auth!= null && request.resource.data.uid == request.auth.uid;
+    }
 
-// Добавить проверку перед подпиской
-if (unsubscribeChat) {
-  unsubscribeChat();
-  unsubscribeChat = null;
-}
-
-// Внутри onSnapshot добавить защиту от ошибок
-unsubscribeChat = onSnapshot(q, snap => {
-  // ... существующий код ...
-}, err => {
-  console.error("Ошибка слушания чата:", err);
-  if (err.code === 'permission-denied') {
-    showError("Нет доступа к этому чату");
-  } else {
-    showError("Ошибка загрузки сообщений");
-  }
-  els.messages.innerHTML = '<div style="padding:40px; text-align:center; color:#e63946;">Ошибка загрузки</div>';
-});
-
-// Улучшенная отправка файла + прогресс (опционально, но красиво)
-if (file) {
-  // ... существующий код ...
-  try {
-    const fileRef = ref(storage, path);
-    const uploadTask = uploadBytesResumable(fileRef, file);  // ← изменили на resumable
-
-    uploadTask.on('state_changed', 
-      snapshot => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        els.sendBtn.innerHTML = `Загрузка ${Math.round(progress)}%`;
-      },
-      error => { throw error; },
-      async () => {
-        fileUrl = await getDownloadURL(fileRef);
-        // затем отправляем сообщение
-        await addDoc( ... );
+ матч /чаты/{chatId} {
+ функция isParticipant() {
+ вернуть request.auth.uid в resource.data.participants;
       }
-    );
-  } catch (err) { ... }
-}
 
-// Добавить отображение статуса "прочитано" (очень желательно)
-// Например: добавить поле readBy: array в сообщение
-// Но это уже отдельная механика
+ разрешить чтение: если request.auth!= null && isParticipant();
+      
+ разрешить создание: если request.auth!= ноль
+ && request.resource.data.participants — это список
+ && запрос.ресурс.данные.участники.размер() == 2
+ && request.auth.uid в request.resource.data.participants;
 
-// При выходе из чата очищать подписку
-els.closeChatBtn.onclick = () => {
-  currentChatUser = null;
-  els.chatSection.style.display = 'none';
-  if (unsubscribeChat) {
-    unsubscribeChat();
-    unsubscribeChat = null;
+ разрешить обновление: если isParticipant()
+ && request.resource.data.diff(resource.data).affectedKeys()
+ .hasOnly(['lastMessage', 'lastMessageTime', 'lastSender']);
+    }
+
+ матч/чаты/{chatId}/сообщения/{messageId} {
+ функция isParticipant() {
+ вернуть request.auth.uid в get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      }
+
+ разрешить чтение: если request.auth!= null && isParticipant();
+      
+ разрешить создание: если request.auth!= ноль
+ && являетсяУчастником()
+ && request.resource.data.senderId == request.auth.uid
+ && request.resource.data.timestamp == request.time;
+
+ разрешить обновление, удалить: если ложно;
+    }
   }
-  els.messages.innerHTML = '';
-};
+}
