@@ -19,7 +19,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.5;
@@ -35,10 +35,7 @@
             overflow: hidden;
         }
 
-        .auth-section {
-            padding: 24px;
-            text-align: center;
-        }
+        .auth-section { padding: 24px; text-align: center; }
 
         .btn {
             padding: 10px 24px;
@@ -50,33 +47,13 @@
             transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
+        .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
 
-        .btn-danger {
-            background: #e63946;
-            color: white;
-        }
-
+        .btn-danger { background: #e63946; color: white; }
         .btn-danger:hover { background: #d00000; }
 
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
 
         .avatar {
             width: 48px;
@@ -86,11 +63,7 @@
             border: 2px solid var(--primary);
         }
 
-        h2 {
-            font-size: 1.4rem;
-            margin-bottom: 16px;
-            color: var(--text);
-        }
+        h2 { font-size: 1.4rem; margin-bottom: 16px; }
 
         .users-list .user-item {
             display: flex;
@@ -102,9 +75,7 @@
         }
 
         .users-list .user-item:hover,
-        .users-list .user-item.active {
-            background: #e7f3ff;
-        }
+        .users-list .user-item.active { background: #e7f3ff; }
 
         .chat-header {
             display: flex;
@@ -126,16 +97,8 @@
             background: #fafafa;
         }
 
-        .message {
-            display: flex;
-            max-width: 80%;
-            gap: 8px;
-        }
-
-        .message.sent {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
+        .message { display: flex; max-width: 80%; gap: 8px; }
+        .message.sent { align-self: flex-end; flex-direction: row-reverse; }
 
         .message-content {
             padding: 10px 14px;
@@ -144,17 +107,9 @@
             word-break: break-word;
         }
 
-        .message.sent .message-content {
-            background: var(--primary);
-            color: white;
-        }
+        .message.sent .message-content { background: var(--primary); color: white; }
 
-        .message-time {
-            font-size: 0.75rem;
-            color: #999;
-            margin-top: 4px;
-            align-self: flex-end;
-        }
+        .message-time { font-size: 0.75rem; color: #999; margin-top: 4px; align-self: flex-end; }
 
         .chat-input {
             display: flex;
@@ -185,11 +140,7 @@
             border-radius: 24px;
         }
 
-        .post {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
+        .post { padding: 16px; border-bottom: 1px solid var(--border); }
         .post:last-child { border-bottom: none; }
 
         .error-message {
@@ -216,17 +167,17 @@
             </button>
         </div>
         <div id="userBlock" style="display: none;">
-            <div class="user-info">
+            <div class="user-info" style="display:flex; align-items:center; gap:12px; justify-content:center; flex-wrap:wrap;">
                 <img id="userPhoto" class="avatar" src="" alt="Аватар">
-                <span id="userName" style="font-weight: 600; font-size: 1.1rem;"></span>
+                <span id="userName" style="font-weight:600; font-size:1.1rem;"></span>
                 <button id="logoutBtn" class="btn btn-danger">Выйти</button>
             </div>
         </div>
     </div>
 
-    <!-- Список пользователей -->
+    <!-- Пользователи -->
     <div class="card">
-        <div style="padding: 16px;">
+        <div style="padding:16px;">
             <h2><i class="fas fa-users"></i> С кем пообщаться?</h2>
         </div>
         <div id="usersList" class="users-list">
@@ -235,11 +186,11 @@
     </div>
 
     <!-- Чат -->
-    <div class="card chat-section" id="chatSection" style="display: none;">
+    <div class="card chat-section" id="chatSection" style="display:none;">
         <div class="chat-header">
             <img id="currentChatAvatar" class="avatar" src="" alt="">
             <div style="flex:1">
-                <div id="currentChatName" style="font-weight: 600;"></div>
+                <div id="currentChatName" style="font-weight:600;"></div>
             </div>
             <button id="closeChatBtn" class="btn btn-outline">✕</button>
         </div>
@@ -254,7 +205,7 @@
 
     <!-- Лента -->
     <div class="card">
-        <div style="padding: 16px;">
+        <div style="padding:16px;">
             <h2><i class="fas fa-stream"></i> Общая лента</h2>
         </div>
         <div class="post-form">
@@ -270,14 +221,33 @@
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script type="module">
+    // ────────────────────────────────────────────────
+    // Импорты Firebase (модульный SDK v10+)
+    // ────────────────────────────────────────────────
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
+    import { 
+        getAuth, 
+        GoogleAuthProvider, 
+        signInWithPopup, 
+        onAuthStateChanged, 
+        signOut 
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        collection, 
+        doc, 
+        setDoc, 
+        onSnapshot, 
+        addDoc, 
+        serverTimestamp, 
+        query, 
+        orderBy, 
+        updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-<script>
-    // ────────────────────────────────────────────────
-    //  Исправленный firebaseConfig (прямоугольные кавычки!)
-    // ────────────────────────────────────────────────
+    // Конфигурация (та, что ты прислал)
     const firebaseConfig = {
         apiKey: "AIzaSyBTYxqJJwlH82dnQdIr85j4z-CECBK4xJQ",
         authDomain: "named-vine-444211-p3.firebaseapp.com",
@@ -288,13 +258,16 @@
         measurementId: "G-VQ5YQPQB36"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const provider = new firebase.auth.GoogleAuthProvider();
+    // Инициализация
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);          // если аналитика нужна
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const provider = new GoogleAuthProvider();
 
     // ────────────────────────────────────────────────
-    //  DOM
+    // DOM элементы
     // ────────────────────────────────────────────────
     const els = {
         loginBtn: document.getElementById('loginBtn'),
@@ -330,46 +303,47 @@
     async function saveUser(user) {
         if (!user) return;
         try {
-            await db.collection('users').doc(user.uid).set({
+            await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 email: user.email,
-                displayName: user.displayName || 'Гость',
-                photoURL: user.photoURL || 'https://via.placeholder.com/80',
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                displayName: user.displayName || "Гость",
+                photoURL: user.photoURL || "https://via.placeholder.com/80",
+                lastSeen: serverTimestamp()
             }, { merge: true });
         } catch (err) {
-            console.error('saveUser error:', err);
+            console.error("Ошибка сохранения профиля:", err);
         }
     }
 
-    // ─── Вход ────────────────────────────────────────
+    // Вход через Google
     els.loginBtn.onclick = async () => {
         try {
             els.loginBtn.disabled = true;
-            els.loginBtn.textContent = "Входим...";
-            const result = await auth.signInWithPopup(provider);
+            els.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Входим...';
+
+            const result = await signInWithPopup(auth, provider);
             await saveUser(result.user);
         } catch (err) {
-            console.error('SignIn error:', err);
-            let msg = 'Ошибка входа';
-            if (err.code === 'auth/popup-blocked') {
-                msg = 'Всплывающее окно заблокировано браузером. Разрешите попапы для этого сайта.';
-            } else if (err.code === 'auth/unauthorized-domain') {
-                msg = 'Домен не авторизован в Firebase. Добавьте localhost и ваш домен в Authorized domains.';
+            let msg = "Ошибка входа";
+            if (err.code === "auth/popup-blocked") {
+                msg = "Браузер заблокировал всплывающее окно. Разрешите поп-апы для сайта.";
+            } else if (err.code === "auth/unauthorized-domain") {
+                msg = "Домен не разрешён в Firebase → добавьте localhost / ваш домен в Authorized domains.";
             } else {
-                msg += ': ' + err.message;
+                msg += `: ${err.message}`;
             }
             showError(msg);
+            console.error(err);
         } finally {
             els.loginBtn.disabled = false;
-            els.loginBtn.textContent = "Войти через Google";
+            els.loginBtn.innerHTML = '<i class="fab fa-google"></i> Войти через Google';
         }
     };
 
-    els.logoutBtn.onclick = () => auth.signOut().catch(err => showError('Ошибка выхода: ' + err.message));
+    els.logoutBtn.onclick = () => signOut(auth).catch(err => showError("Ошибка выхода: " + err.message));
 
-    // ─── Состояние авторизации ──────────────────────
-    auth.onAuthStateChanged(user => {
+    // Отслеживание состояния авторизации
+    onAuthStateChanged(auth, user => {
         currentUser = user;
 
         if (user) {
@@ -394,51 +368,53 @@
         }
     });
 
-    // ─── Остальной код (users, chat, posts) ─────────
-    // (оставлен почти без изменений, только мелкие улучшения читаемости)
-
+    // ────────────────────────────────────────────────
+    // Загрузка пользователей (реал-тайм)
+    // ────────────────────────────────────────────────
     function loadUsers() {
         if (unsub.users) unsub.users();
-        unsub.users = db.collection('users')
-            .onSnapshot(snap => {
-                if (!currentUser) return;
-                const users = [];
-                snap.forEach(doc => {
-                    const u = doc.data();
-                    if (u.uid !== currentUser.uid) users.push(u);
-                });
-
-                els.usersList.innerHTML = users.length === 0
-                    ? '<div class="loading">Пока никого нет</div>'
-                    : '';
-
-                users.forEach(u => {
-                    const item = document.createElement('div');
-                    item.className = 'user-item';
-                    if (currentChatUser?.uid === u.uid) item.classList.add('active');
-
-                    item.innerHTML = `
-                        <img class="avatar" src="${u.photoURL || 'https://via.placeholder.com/50'}" alt="">
-                        <div style="flex:1">
-                            <div style="font-weight:600">${u.displayName || 'Пользователь'}</div>
-                            <div style="font-size:0.85rem; color:var(--text-secondary)">${u.email || ''}</div>
-                        </div>
-                        <button class="btn btn-primary start-chat">Написать</button>
-                    `;
-
-                    item.querySelector('.start-chat').onclick = e => {
-                        e.stopPropagation();
-                        startChat(u);
-                    };
-
-                    els.usersList.appendChild(item);
-                });
-            }, err => {
-                console.error(err);
-                els.usersList.innerHTML = '<div class="loading">Ошибка загрузки</div>';
+        unsub.users = onSnapshot(collection(db, "users"), snap => {
+            if (!currentUser) return;
+            const users = [];
+            snap.forEach(doc => {
+                const u = doc.data();
+                if (u.uid !== currentUser.uid) users.push(u);
             });
+
+            els.usersList.innerHTML = users.length === 0
+                ? '<div class="loading">Пока никого нет</div>'
+                : '';
+
+            users.forEach(u => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                if (currentChatUser?.uid === u.uid) item.classList.add('active');
+
+                item.innerHTML = `
+                    <img class="avatar" src="${u.photoURL || 'https://via.placeholder.com/50'}" alt="">
+                    <div style="flex:1">
+                        <div style="font-weight:600">${u.displayName || 'Пользователь'}</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary)">${u.email || ''}</div>
+                    </div>
+                    <button class="btn btn-primary start-chat">Написать</button>
+                `;
+
+                item.querySelector('.start-chat').onclick = e => {
+                    e.stopPropagation();
+                    startChat(u);
+                };
+
+                els.usersList.appendChild(item);
+            });
+        }, err => {
+            console.error(err);
+            els.usersList.innerHTML = '<div class="loading">Ошибка загрузки</div>';
+        });
     }
 
+    // ────────────────────────────────────────────────
+    // Чат
+    // ────────────────────────────────────────────────
     function startChat(user) {
         if (currentChatUser?.uid === user.uid) return;
         currentChatUser = user;
@@ -452,33 +428,32 @@
         if (unsub.chat) unsub.chat();
         els.messages.innerHTML = '<div class="loading">Загрузка сообщений...</div>';
 
-        unsub.chat = db.collection('chats').doc(chatId).collection('messages')
-            .orderBy('timestamp')
-            .onSnapshot(snap => {
-                if (snap.empty) {
-                    els.messages.innerHTML = '<div class="loading">Нет сообщений</div>';
-                    return;
-                }
-                els.messages.innerHTML = '';
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    const sent = m.senderId === currentUser.uid;
+        const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp"));
+        unsub.chat = onSnapshot(q, snap => {
+            if (snap.empty) {
+                els.messages.innerHTML = '<div class="loading">Нет сообщений</div>';
+                return;
+            }
+            els.messages.innerHTML = '';
+            snap.forEach(docSnap => {
+                const m = docSnap.data();
+                const sent = m.senderId === currentUser.uid;
 
-                    const div = document.createElement('div');
-                    div.className = `message ${sent ? 'sent' : ''}`;
-                    div.innerHTML = `
-                        <img class="avatar" src="${sent ? currentUser.photoURL : (m.senderPhotoURL || user.photoURL)}" alt="">
-                        <div class="message-content">
-                            ${m.text}
-                            <div class="message-time">
-                                ${m.timestamp ? m.timestamp.toDate().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : ''}
-                            </div>
+                const div = document.createElement('div');
+                div.className = `message ${sent ? 'sent' : ''}`;
+                div.innerHTML = `
+                    <img class="avatar" src="${sent ? currentUser.photoURL : (m.senderPhotoURL || user.photoURL)}" alt="">
+                    <div class="message-content">
+                        ${m.text}
+                        <div class="message-time">
+                            ${m.timestamp ? m.timestamp.toDate().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : ''}
                         </div>
-                    `;
-                    els.messages.appendChild(div);
-                });
-                els.messages.scrollTop = els.messages.scrollHeight;
+                    </div>
+                `;
+                els.messages.appendChild(div);
             });
+            els.messages.scrollTop = els.messages.scrollHeight;
+        });
     }
 
     els.sendBtn.onclick = async () => {
@@ -488,12 +463,12 @@
         const chatId = [currentUser.uid, currentChatUser.uid].sort().join('_');
 
         try {
-            await db.collection('chats').doc(chatId).collection('messages').add({
+            await addDoc(collection(db, "chats", chatId, "messages"), {
                 text,
                 senderId: currentUser.uid,
                 senderName: currentUser.displayName,
                 senderPhotoURL: currentUser.photoURL,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: serverTimestamp()
             });
             els.messageInput.value = '';
         } catch (err) {
@@ -510,19 +485,22 @@
         unsub.chat = null;
     };
 
+    // ────────────────────────────────────────────────
+    // Посты / лента
+    // ────────────────────────────────────────────────
     els.createPostBtn.onclick = async () => {
         const text = els.postInput.value.trim();
         if (!text || !currentUser) return showError('Напишите текст поста');
 
         try {
-            await db.collection('requests').add({
+            await addDoc(collection(db, "requests"), {
                 name: currentUser.displayName,
                 email: currentUser.email,
                 photo: currentUser.photoURL,
                 text,
                 userId: currentUser.uid,
                 likes: 0,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: serverTimestamp()
             });
             els.postInput.value = '';
         } catch (err) {
@@ -532,49 +510,48 @@
 
     function loadPosts() {
         if (unsub.posts) unsub.posts();
-        unsub.posts = db.collection('requests')
-            .orderBy('timestamp', 'desc')
-            .onSnapshot(snap => {
-                els.postsList.innerHTML = snap.empty ? '<div class="loading">Пока нет постов</div>' : '';
+        const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
+        unsub.posts = onSnapshot(q, snap => {
+            els.postsList.innerHTML = snap.empty ? '<div class="loading">Пока нет постов</div>' : '';
 
-                snap.forEach(doc => {
-                    const p = doc.data();
-                    const div = document.createElement('div');
-                    div.className = 'post';
-                    div.innerHTML = `
-                        <div style="display:flex; gap:12px; margin-bottom:8px;">
-                            <img class="avatar" src="${p.photo || 'https://via.placeholder.com/48'}" alt="">
-                            <div>
-                                <strong>${p.name || 'Аноним'}</strong><br>
-                                <small style="color:var(--text-secondary);">
-                                    ${p.timestamp ? p.timestamp.toDate().toLocaleString('ru-RU',{dateStyle:'short', timeStyle:'short'}) : ''}
-                                </small>
-                            </div>
+            snap.forEach(docSnap => {
+                const p = docSnap.data();
+                const div = document.createElement('div');
+                div.className = 'post';
+                div.innerHTML = `
+                    <div style="display:flex; gap:12px; margin-bottom:8px;">
+                        <img class="avatar" src="${p.photo || 'https://via.placeholder.com/48'}" alt="">
+                        <div>
+                            <strong>${p.name || 'Аноним'}</strong><br>
+                            <small style="color:var(--text-secondary);">
+                                ${p.timestamp ? p.timestamp.toDate().toLocaleString('ru-RU',{dateStyle:'short', timeStyle:'short'}) : ''}
+                            </small>
                         </div>
-                        <div style="margin:8px 0;">${p.text}</div>
-                        <button class="btn btn-outline like-btn" data-id="${doc.id}" data-likes="${p.likes||0}">
-                            <i class="fas fa-heart"></i> ${p.likes || 0}
-                        </button>
-                    `;
-                    els.postsList.appendChild(div);
-                });
-
-                document.querySelectorAll('.like-btn').forEach(btn => {
-                    btn.onclick = async () => {
-                        if (!currentUser) return showError('Войдите, чтобы ставить лайки');
-                        const id = btn.dataset.id;
-                        const likes = Number(btn.dataset.likes) || 0;
-                        try {
-                            await db.collection('requests').doc(id).update({ likes: likes + 1 });
-                        } catch (err) {
-                            showError('Ошибка лайка');
-                        }
-                    };
-                });
-            }, err => {
-                console.error(err);
-                els.postsList.innerHTML = '<div class="loading">Ошибка загрузки ленты</div>';
+                    </div>
+                    <div style="margin:8px 0;">${p.text}</div>
+                    <button class="btn btn-outline like-btn" data-id="${docSnap.id}" data-likes="${p.likes||0}">
+                        <i class="fas fa-heart"></i> ${p.likes || 0}
+                    </button>
+                `;
+                els.postsList.appendChild(div);
             });
+
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    if (!currentUser) return showError('Войдите, чтобы ставить лайки');
+                    const id = btn.dataset.id;
+                    const likes = Number(btn.dataset.likes) || 0;
+                    try {
+                        await updateDoc(doc(db, "requests", id), { likes: likes + 1 });
+                    } catch (err) {
+                        showError('Ошибка лайка');
+                    }
+                };
+            });
+        }, err => {
+            console.error(err);
+            els.postsList.innerHTML = '<div class="loading">Ошибка загрузки ленты</div>';
+        });
     }
 </script>
 </body>
