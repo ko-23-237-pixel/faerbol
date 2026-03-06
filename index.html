@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Личные сообщения</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    :root {
-      --primary: #0066ff;
-      --primary-dark: #0055cc;
-      --bg: #f0f2f5;
-      --card: white;
-      --text: #1c1e21;
-      --text-secondary: #65676b;
-      --border: #dddfe2;
+<html язык="ру">
+<голова>
+  <мета набор символов="УТФ-8" />
+  <мета имя="область просмотра" содержание="ширина=ширина устройства, начальный масштаб=1.0"/>
+  <заголовок>Личные сообщения</заголовок>
+  <связь отн="таблица стилей" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <стиль>
+    :корень {
+      --первичный: #0066ff;
+      --первичный-темный: #0055cc;
+      --бг: #f0f2f5;
+      --карта: белый;
+      --текст: #1c1e21;
+      --текст-вторичный: #65676б;
+      --граница: #dddfe2;
     }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      margin: 0;
-      padding: 16px;
-      color: var(--text);
+    тело {
+      семейство шрифтов: системный интерфейс, -apple-система, без засечек;
+      фон: вар(--бг);
+      маржа: 0;
+      прокладка:   16пх;
+      цвет: вар(--текст);
     }
-    .container { max-width: 720px; margin: 0 auto; }
-    .card {
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
-      overflow: hidden;
+    .контейнер { максимальная ширина: 720пх; маржа: 0 авто; }
+    .карта {
+      фон: вар(--карта);
+      радиус границы:    12пх;
+      тень от ящика: 0 2пх    12пх ргба(0,0,0,0,08);
+      маржа-дно:    20пх;
+      переполнение: скрытый;
     }
-    .auth-section { padding: 20px; text-align: center; }
-    .user-info {
-      display: flex;
-      align-items: center;
+    .раздел аутентификации { прокладка:    20пх; выравнивание текста: центр; }
+    .информация о пользователе {
+      отображать: сгибать;
+      выравнивание элементов: центр;
       gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
@@ -302,27 +302,58 @@
 
   els.logoutBtn.onclick = () => signOut(auth);
 
-  onAuthStateChanged(auth, user => {
-    currentUser = user;
-    if (user) {
-      els.loginBlock.style.display = 'none';
-      els.userBlock.style.display = 'block';
-      els.userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'You')}&background=0066ff&color=fff`;
-      els.userName.textContent = user.displayName || 'Пользователь';
-
-      // Показываем "Заметки себе"
-      const selfItem = document.getElementById('selfChatItem');
-      const selfAvatar = document.getElementById('selfAvatar');
-      selfAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'You')}&background=2ecc71&color=fff`;
-      selfItem.style.display = 'flex';
-
-      selfItem.querySelector('.start-chat').onclick = e => {
-        e.stopPropagation();
-        startChat({
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  if (user) {
+    // Создаём документ пользователя, если не существует
+    const userRef = doc(db, "users", user.uid);
+    getDoc(userRef).then(snap => {
+      if (!snap.exists()) {
+        setDoc(userRef, {
           uid: user.uid,
-          displayName: user.displayName || 'Вы (заметки)',
-          photoURL: user.photoURL
-        });
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          email: user.email
+        }).catch(err => console.error("Ошибка создания пользователя:", err));
+      }
+    });
+
+    // ... остальной код onAuthStateChanged, включая показ selfChatItem ...
+  }
+});
+  onAuthStateChanged(auth, user => {
+  // ... код выше ...
+
+  if (user) {
+    console.log("Пользователь авторизован:", user.uid); // Для отладки
+
+    els.loginBlock.style.display = 'none';
+    els.userBlock.style.display = 'block';
+    els.userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'You')}&background=0066ff&color=fff`;
+    els.userName.textContent = user.displayName || 'Пользователь';
+
+    // Показ "Заметки / себе"
+    const selfItem = document.getElementById('selfChatItem');
+    const selfAvatar = document.getElementById('selfAvatar');
+    selfAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'You')}&background=2ecc71&color=fff`;
+    selfItem.style.display = 'flex';
+    console.log("Блок заметок показан"); // Для отладки
+
+    // Обработчик
+    selfItem.querySelector('.start-chat').onclick = e => {
+      e.stopPropagation();
+      startChat({
+        uid: user.uid,
+        displayName: user.displayName || 'Вы (заметки)',
+        photoURL: user.photoURL
+      });
+    };
+
+    loadUsers();
+  } else {
+    // ... код для выхода ...
+  }
+});
       };
 
       loadUsers();
@@ -382,18 +413,46 @@
     });
   }
 
-  async function ensureChatExists(chatId) {
-    const chatRef = doc(db, "chats", chatId);
-    if (!(await getDoc(chatRef)).exists()) {
-      await setDoc(chatRef, {
-        participants: [currentUser.uid, currentChatUser.uid].sort(),
-        createdAt: serverTimestamp(),
-        lastMessage: null,
-        lastMessageTime: serverTimestamp(),
-        lastSender: null
-      });
+ async function ensureChatExists(chatId) {
+  const chatRef = doc(db, "chats", chatId);
+  const snap = await getDoc(chatRef);
+  if (!snap.exists()) {
+    const data = {
+      createdAt: serverTimestamp(),
+      lastMessage: null,
+      lastMessageTime: serverTimestamp(),
+      lastSender: null
+    };
+    if (chatId.startsWith('notes_')) {
+      data.participants = [currentUser.uid];
+      data.type = 'notes';
+    } else {
+      data.participants = [currentUser.uid, currentChatUser.uid].sort();
     }
+    await setDoc(chatRef, data);
   }
+}
+
+function startChat(user) {
+  if (currentChatUser?.uid === user.uid) return;
+  currentChatUser = user;
+
+  els.chatSection.style.display = 'block';
+
+  let chatId;
+  if (user.uid === currentUser.uid) {
+    chatId = `notes_${currentUser.uid}`;
+    els.currentChatName.textContent = "Заметки / личный чат";
+    els.currentChatAvatar.src = currentUser.photoURL || `https://ui-avatars.com/api/?name=Notes&background=2ecc71&color=fff`;
+  } else {
+    chatId = [currentUser.uid, user.uid].sort().join('_');
+    els.currentChatName.textContent = user.displayName || 'Пользователь';
+    els.currentChatAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=4a90e2&color=fff`;
+  }
+
+  // ... остальной код startChat (unsubscribe, загрузка сообщений, onSnapshot) ...
+}
+  
 
   function startChat(user) {
     if (currentChatUser?.uid === user.uid) return;
