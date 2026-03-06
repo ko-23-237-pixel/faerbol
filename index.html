@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат и лента</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        
+        .auth-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        button {
+            background: #0084ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0073e6;
+        }
+        
+        #logoutBtn {
+            background: #dc3545;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        
+        /* Список пользователей */
+        .users-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .user-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .user-item.active {
+            background: #e3f2fd;
+        }
+        
+        .user-avatar-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        
+        /* Чат */
+        .chat-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 15px;
+        }
+        
+        .messages {
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 80%;
+        }
+        
+        .message.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-content {
+            background: #e4e6eb;
+            padding: 8px 12px;
+            border-radius: 18px;
+            word-break: break-word;
+        }
+        
+        .message.sent .message-content {
+            background: #0084ff;
+            color: white;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            align-self: flex-end;
+        }
+        
+        .message-time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        /* Посты */
+        .posts-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .post-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .post-form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .post {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Авторизация -->
+    <div class="auth-section">
+        <div id="loginBlock">
+            <button id="loginBtn">🔑 Войти через Google</button>
+        </div>
+        <div id="userBlock" style="display: none;">
+            <div class="user-info">
+                <img id="userPhoto" class="user-avatar" src="" alt="">
+                <span id="userName"></span>
+                <button id="logoutBtn">Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список пользователей (кнопки для чата) -->
+    <div class="users-section">
+        <h2>👥 С кем пообщаться?</h2>
+        <div id="usersList">
+            <div class="empty-state">Загрузка пользователей...</div>
+        </div>
+    </div>
+
+    <!-- Чат с выбранным пользователем -->
+    <div class="chat-section" id="chatSection">
+        <div class="chat-header" id="chatHeader">
+            <img id="currentChatAvatar" class="user-avatar" src="" alt="">
+            <h3 id="currentChatName"></h3>
+            <button id="closeChatBtn" style="margin-left: auto; background: #6c757d;">✕</button>
+        </div>
+        
+        <div class="messages" id="messages">
+            <!-- Сюда будут добавляться сообщения -->
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Введите сообщение...">
+            <button id="sendBtn">Отправить</button>
+        </div>
+    </div>
+
+    <!-- Посты (общая лента) -->
+    <div class="posts-section">
+        <h2>📝 Общая лента</h2>
+        <div class="post-form">
+            <input type="text" id="postInput" placeholder="Что у вас нового?">
+            <button id="createPostBtn">Опубликовать</button>
+        </div>
+        <div id="postsList">
+            <div class="empty-state">Загрузка постов...</div>
+        </div>
+    </div>
+
+    <div id="errorContainer" style="display: none;" class="error-message"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase конфигурация (ваша)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBuAkXAyQUA_rnHVLX7jJ8Nkf1nPi9T_g",
+            authDomain: "kriptocompany-75fca.firebaseapp.com",
+            projectId: "kriptocompany-75fca",
+            storageBucket: "kriptocompany-75fca.firebasestorage.app",
+            messagingSenderId: "1093847911427",
+            appId: "1:1093847911427:web:13b9847675f4e2d84a1236"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        // DOM элементы
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginBlock = document.getElementById('loginBlock');
+        const userBlock = document.getElementById('userBlock');
+        const userPhoto = document.getElementById('userPhoto');
+        const userName = document.getElementById('userName');
+        
+        // Элементы пользователей
+        const usersList = document.getElementById('usersList');
+        
+        // Элементы чата
+        const chatSection = document.getElementById('chatSection');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const currentChatAvatar = document.getElementById('currentChatAvatar');
+        const currentChatName = document.getElementById('currentChatName');
+        const closeChatBtn = document.getElementById('closeChatBtn');
+        
+        // Элементы постов
+        const postInput = document.getElementById('postInput');
+        const createPostBtn = document.getElementById('createPostBtn');
+        const postsList = document.getElementById('postsList');
+
+        const errorContainer = document.getElementById('errorContainer');
+
+        let currentUser = null;
+        let currentChatUser = null;
+        let unsubscribeChat = null;
+        let unsubscribeUsers = null;
+        let unsubscribePosts = null;
+
+        // Вспомогательные функции
+        function showError(message) {
+            errorContainer.textContent = message;
+            errorContainer.style.display = 'block';
+            setTimeout(() => {
+                errorContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        // Сохранение пользователя в коллекцию users
+        async function saveUserToFirestore(user) {
+            if (!user) return;
+            try {
+                const userRef = db.collection('users').doc(user.uid);
+                await userRef.set({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || 'Пользователь',
+                    photoURL: user.photoURL || 'https://via.placeholder.com/50',
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log('Пользователь сохранён в users');
+            } catch (error) {
+                console.error('Ошибка сохранения пользователя:', error);
+            }
+        }
+
+        // Вход
+        loginBtn.onclick = () => {
+            auth.signInWithPopup(provider)
+                .then(result => saveUserToFirestore(result.user))
+                .catch(error => showError('Ошибка входа: ' + error.message));
+        };
+
+        // Выход
+        logoutBtn.onclick = () => auth.signOut();
+
+        // Отслеживаем состояние входа
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            
+            if (user) {
+                // Показываем информацию о пользователе
+                loginBlock.style.display = 'none';
+                userBlock.style.display = 'block';
+                userPhoto.src = user.photoURL || 'https://via.placeholder.com/40';
+                userName.textContent = user.displayName || 'Пользователь';
+                
+                // Сохраняем пользователя в Firestore
+                saveUserToFirestore(user);
+                
+                // Загружаем пользователей и посты
+                loadUsersRealtime();
+                loadPostsRealtime();
+                
+                // Если был открыт чат, закрываем его
+                if (currentChatUser) {
+                    closeChat();
+                }
+            } else {
+                // Показываем кнопку входа
+                loginBlock.style.display = 'block';
+                userBlock.style.display = 'none';
+                
+                // Очищаем списки
+                usersList.innerHTML = '<div class="empty-state">Войдите, чтобы увидеть пользователей</div>';
+                postsList.innerHTML = '<div class="empty-state">Войдите, чтобы увидеть посты</div>';
+                chatSection.style.display = 'none';
+                
+                if (unsubscribeChat) {
+                    unsubscribeChat();
+                    unsubscribeChat = null;
+                }
+                if (unsubscribeUsers) {
+                    unsubscribeUsers();
+                    unsubscribeUsers = null;
+                }
+                if (unsubscribePosts) {
+                    unsubscribePosts();
+                    unsubscribePosts = null;
+                }
+            }
+        });
+
+        // Загрузка списка пользователей в реальном времени из коллекции users
+        function loadUsersRealtime() {
+            if (unsubscribeUsers) unsubscribeUsers();
+            
+            unsubscribeUsers = db.collection('users')
+                .onSnapshot(snapshot => {
+                    if (!currentUser) return;
+                    
+                    const users = [];
+                    snapshot.forEach(doc => {
+                        const userData = doc.data();
+                        if (userData.uid !== currentUser.uid) {
+                            users.push(userData);
+                        }
+                    });
+                    
+                    if (users.length === 0) {
+                        usersList.innerHTML = '<div class="empty-state">Пока нет других пользователей</div>';
+                        return;
+                    }
+                    
+                    usersList.innerHTML = '';
+                    users.forEach(user => {
+                        const div = document.createElement('div');
+                        div.className = 'user-item';
+                        if (currentChatUser && currentChatUser.uid === user.uid) {
+                            div.classList.add('active');
+                        }
+                        div.innerHTML = `
+                            <img class="user-avatar-small" src="${user.photoURL || 'https://via.placeholder.com/50'}" alt="">
+                            <div>
+                                <div style="font-weight: bold;">${user.displayName || 'Пользователь'}</div>
+                                <div style="font-size: 12px; color: #666;">${user.email || ''}</div>
+                            </div>
+                            <button style="margin-left: auto;" class="start-chat-btn">💬 Написать</button>
+                        `;
+                        
+                        const btn = div.querySelector('.start-chat-btn');
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            startChat(user);
+                        };
+                        
+                        usersList.appendChild(div);
+                    });
+                }, error => {
+                    console.error('Ошибка загрузки пользователей:', error);
+                    usersList.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+                });
+        }
+
+        // Начать чат с пользователем
+        function startChat(user) {
+            if (currentChatUser && currentChatUser.uid === user.uid) return; // уже открыт
+            
+            currentChatUser = user;
+            
+            // Показываем секцию чата
+            chatSection.style.display = 'block';
+            currentChatAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+            currentChatName.textContent = 'Чат с ' + (user.displayName || 'Пользователем');
+            
+            // Подсветка активного пользователя в списке
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            // Можно найти элемент по data-uid, но для простоты перезагрузим стиль при следующем обновлении списка
+            
+            // Создаем ID чата
+            const chatId = currentUser.uid < user.uid 
+                ? currentUser.uid + '_' + user.uid 
+                : user.uid + '_' + currentUser.uid;
+            
+            // Отписываемся от предыдущего чата
+            if (unsubscribeChat) {
+                unsubscribeChat();
+            }
+            
+            // Загружаем сообщения
+            messages.innerHTML = '<div class="empty-state">Загрузка сообщений...</div>';
+            
+            unsubscribeChat = db.collection('chats')
+                .doc(chatId)
+                .collection('messages')
+                .orderBy('timestamp')
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        messages.innerHTML = '<div class="empty-state">Нет сообщений. Напишите первое!</div>';
+                        return;
+                    }
+                    
+                    messages.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const msg = doc.data();
+                        const isSent = msg.senderId === currentUser.uid;
+                        
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+                        
+                        // Аватар (для полученных сообщений берем из данных сообщения или текущего чата)
+                        const avatarUrl = isSent 
+                            ? currentUser.photoURL || 'https://via.placeholder.com/36'
+                            : (msg.senderPhotoURL || currentChatUser.photoURL || 'https://via.placeholder.com/36');
+                        
+                        const time = msg.timestamp 
+                            ? msg.timestamp.toDate().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                            : '';
+                        
+                        messageDiv.innerHTML = `
+                            <img class="message-avatar" src="${avatarUrl}" alt="">
+                            <div class="message-content">
+                                <div>${msg.text}</div>
+                                <div class="message-time">${time}</div>
+                            </div>
+                        `;
+                        
+                        messages.appendChild(messageDiv);
+                    });
+                    
+                    messages.scrollTop = messages.scrollHeight;
+                }, error => {
+                    console.error('Ошибка загрузки сообщений:', error);
+                    messages.innerHTML = '<div class="empty-state">Ошибка загрузки сообщений</div>';
+                });
+        }
+
+        // Отправка сообщения
+        sendBtn.onclick = async () => {
+            const text = messageInput.value.trim();
+            
+            if (!text || !currentUser || !currentChatUser) {
+                showError('Выберите пользователя и напишите сообщение');
+                return;
+            }
+            
+            try {
+                const chatId = currentUser.uid < currentChatUser.uid 
+                    ? currentUser.uid + '_' + currentChatUser.uid 
+                    : currentChatUser.uid + '_' + currentUser.uid;
+                
+                await db.collection('chats')
+                    .doc(chatId)
+                    .collection('messages')
+                    .add({
+                        text: text,
+                        senderId: currentUser.uid,
+                        senderName: currentUser.displayName,
+                        senderPhotoURL: currentUser.photoURL,
+                        receiverId: currentChatUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                
+                messageInput.value = '';
+                
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                showError('Не удалось отправить сообщение');
+            }
+        };
+
+        // Отправка по Enter
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+
+        // Закрыть чат
+        function closeChat() {
+            currentChatUser = null;
+            chatSection.style.display = 'none';
+            if (unsubscribeChat) {
+                unsubscribeChat();
+                unsubscribeChat = null;
+            }
+            // Снимаем подсветку активного пользователя
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+
+        closeChatBtn.onclick = closeChat;
+
+        // Создание поста
+        createPostBtn.onclick = async () => {
+            const text = postInput.value.trim();
+            
+            if (!text || !currentUser) {
+                showError('Войдите и напишите что-нибудь');
+                return;
+            }
+            
+            try {
+                await db.collection('requests').add({
+                    name: currentUser.displayName,
+                    email: currentUser.email,
+                    photo: currentUser.photoURL,
+                    text: text,
+                    userId: currentUser.uid,
+                    likes: 0,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                postInput.value = '';
+                
+            } catch (error) {
+                console.error('Ошибка создания поста:', error);
+                showError('Не удалось создать пост');
+            }
+        };
+
+        // Загрузка постов в реальном времени
+        function loadPostsRealtime() {
+            if (unsubscribePosts) unsubscribePosts();
+            
+            unsubscribePosts = db.collection('requests')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        postsList.innerHTML = '<div class="empty-state">Пока нет постов</div>';
+                        return;
+                    }
+                    
+                    postsList.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const div = document.createElement('div');
+                        div.className = 'post';
+                        
+                        const time = data.timestamp 
+                            ? data.timestamp.toDate().toLocaleString('ru-Ru', { 
+                                day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' 
+                              })
+                            : '';
+                        
+                        div.innerHTML = `
+                            <div class="post-header">
+                                <img class="user-avatar-small" src="${data.photo || 'https://via.placeholder.com/40'}" alt="">
+                                <div>
+                                    <strong>${data.name || 'Аноним'}</strong>
+                                    <div style="font-size: 11px; color: #666;">${time}</div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 10px;">${data.text}</div>
+                            <button class="like-btn" data-id="${doc.id}" data-likes="${data.likes || 0}">
+                                ❤️ ${data.likes || 0}
+                            </button>
+                        `;
+                        postsList.appendChild(div);
+                    });
+                    
+                    // Добавляем лайки
+                    document.querySelectorAll('.like-btn').forEach(btn => {
+                        btn.onclick = async () => {
+                            if (!currentUser) {
+                                showError('Войдите, чтобы ставить лайки');
+                                return;
+                            }
+                            
+                            const id = btn.dataset.id;
+                            const likes = parseInt(btn.dataset.likes) || 0;
+                            
+                            try {
+                                await db.collection('requests').doc(id).update({
+                                    likes: likes + 1
+                                });
+                            } catch (error) {
+                                console.error('Ошибка лайка:', error);
+                                showError('Не удалось поставить лайк');
+                            }
+                        };
+                    });
+                }, error => {
+                    console.error('Ошибка загрузки постов:', error);
+                    postsList.innerHTML = '<div class="empty-state">Ошибка загрузки постов</div>';
+                });
+        }
+    </script>
+</body>
+</html>
