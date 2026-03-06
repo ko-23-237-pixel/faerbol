@@ -189,7 +189,7 @@
   <div class="card">
     <h2><i class="fas fa-users"></i> С кем пообщаться?</h2>
     <div id="usersList" class="users-list">
-      <div style="padding:20px; text-align:center; color:#777;">Загрузка...</div>
+      <div style="padding:20px; text-align:center; color:#777;">Загрузка пользователей...</div>
     </div>
   </div>
 
@@ -205,10 +205,10 @@
     <div class="messages" id="messages"></div>
     <div class="chat-input">
       <input type="text" id="messageInput" placeholder="Напишите сообщение..."/>
-      <label for="fileAttach" class="file-attach-label" title="Прикрепить файл или фото">
+      <label for="fileAttach" class="file-attach-label" title="Прикрепить фото, видео или файл">
         <i class="fas fa-paperclip"></i>
       </label>
-      <input type="file" id="fileAttach" style="display:none;" accept="image/*,video/*,.pdf"/>
+      <input type="file" id="fileAttach" style="display:none;" accept="image/jpeg,image/png,image/gif,video/mp4,video/webm,.pdf"/>
       <span id="attachedFileName" class="attached-file-name" style="display:none;"></span>
       <button id="sendBtn" class="btn btn-primary">Отправить</button>
     </div>
@@ -218,6 +218,7 @@
 </div>
 
 <script type="module">
+  // Firebase imports
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
   import {
     getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
@@ -271,19 +272,19 @@
   let unsubscribeUsers = null;
   let unsubscribeChat = null;
 
-  function showError(msg, ms = 5000) {
+  function showError(msg, duration = 5000) {
     els.errorContainer.textContent = msg;
     els.errorContainer.style.display = 'block';
-    setTimeout(() => els.errorContainer.style.display = 'none', ms);
+    setTimeout(() => els.errorContainer.style.display = 'none', duration);
   }
 
-  // ─── Авторизация ────────────────────────────────────────
+  // Авторизация
   els.loginBtn.onclick = async () => {
     try {
       els.loginBtn.disabled = true;
       await signInWithPopup(auth, provider);
     } catch (err) {
-      showError(err.code === "auth/popup-blocked" ? "Всплывающее окно заблокировано" : "Ошибка входа");
+      showError(err.code === "auth/popup-blocked" ? "Браузер заблокировал всплывающее окно" : "Ошибка входа");
     } finally {
       els.loginBtn.disabled = false;
     }
@@ -296,40 +297,38 @@
     if (user) {
       els.loginBlock.style.display = 'none';
       els.userBlock.style.display = 'block';
-      els.userPhoto.src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User');
-      els.userName.textContent = user.displayName || 'Пользователь';
+      els.userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066ff&color=fff`;
+      els.userName.textContent = user.displayName || user.email?.split('@')[0] || 'Пользователь';
       loadUsers();
     } else {
       els.loginBlock.style.display = 'block';
       els.userBlock.style.display = 'none';
       els.chatSection.style.display = 'none';
-      els.usersList.innerHTML = '<div style="padding:30px; text-align:center;">Войдите, чтобы увидеть пользователей</div>';
+      els.usersList.innerHTML = '<div style="padding:30px; text-align:center; color:#777;">Войдите, чтобы увидеть пользователей</div>';
       if (unsubscribeUsers) unsubscribeUsers();
       if (unsubscribeChat) unsubscribeChat();
     }
   });
 
-  // ─── Список пользователей ───────────────────────────────
+  // Загрузка списка пользователей
   function loadUsers() {
-    unsubscribeUsers = onSnapshot(collection(db, "users"), snap => {
+    unsubscribeUsers = onSnapshot(collection(db, "users"), snapshot => {
       if (!currentUser) return;
-      const users = [];
-      snap.forEach(d => {
-        const u = d.data();
-        if (u.uid !== currentUser.uid) users.push(u);
-      });
 
-      els.usersList.innerHTML = users.length === 0
-        ? '<div style="padding:30px; text-align:center; color:#777;">Пока никого нет</div>'
-        : '';
+      els.usersList.innerHTML = '';
+      let hasUsers = false;
 
-      users.forEach(u => {
+      snapshot.forEach(docSnap => {
+        const u = docSnap.data();
+        if (u.uid === currentUser.uid) return;
+        hasUsers = true;
+
         const item = document.createElement('div');
         item.className = 'user-item';
         if (currentChatUser?.uid === u.uid) item.classList.add('active');
 
         item.innerHTML = `
-          <img class="avatar" src="${u.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.displayName || 'User')}" alt="">
+          <img class="avatar" src="${u.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.displayName || 'User')}&background=4a90e2&color=fff`}" alt="">
           <div style="flex:1">
             <div style="font-weight:600">${u.displayName || 'Пользователь'}</div>
           </div>
@@ -340,15 +339,23 @@
           e.stopPropagation();
           startChat(u);
         };
+
         els.usersList.appendChild(item);
       });
+
+      if (!hasUsers) {
+        els.usersList.innerHTML = '<div style="padding:30px; text-align:center; color:#777;">Пока нет других пользователей</div>';
+      }
     }, err => {
-      console.error(err);
-      els.usersList.innerHTML = '<div style="padding:20px; color:red;">Ошибка загрузки</div>';
+      console.error("Ошибка загрузки пользователей:", err);
+      let msg = "Не удалось загрузить список пользователей";
+      if (err.code === 'permission-denied') msg += " (проверьте правила Firestore)";
+      showError(msg);
+      els.usersList.innerHTML = `<div style="padding:20px; text-align:center; color:#e63946;">${msg}</div>`;
     });
   }
 
-  // ─── Создание / открытие чата ───────────────────────────
+  // Гарантируем существование чата
   async function ensureChatExists(chatId) {
     const chatRef = doc(db, "chats", chatId);
     const snap = await getDoc(chatRef);
@@ -363,15 +370,17 @@
     }
   }
 
+  // Открытие чата
   function startChat(user) {
     if (currentChatUser?.uid === user.uid) return;
     currentChatUser = user;
 
     els.chatSection.style.display = 'block';
-    els.currentChatAvatar.src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User');
+    els.currentChatAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=4a90e2&color=fff`;
     els.currentChatName.textContent = user.displayName || 'Пользователь';
 
-    const chatId = [currentUser.uid, user.uid].sort().join('_');
+    const sortedUids = [currentUser.uid, user.uid].sort();
+    const chatId = sortedUids.join('_');
 
     if (unsubscribeChat) {
       unsubscribeChat();
@@ -380,73 +389,67 @@
 
     els.messages.innerHTML = '<div style="padding:40px; text-align:center; color:#777;">Загрузка сообщений...</div>';
 
-    ensureChatExists(chatId).then(() => {
-      const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp"));
-      unsubscribeChat = onSnapshot(q, snap => {
-        if (snap.empty) {
-          els.messages.innerHTML = '<div style="padding:40px; text-align:center; color:#777;">Нет сообщений yet. Напишите первое!</div>';
-          return;
-        }
-        els.messages.innerHTML = '';
-        snap.forEach(docSnap => {
-          const m = docSnap.data();
-          const isSent = m.senderId === currentUser.uid;
-          const div = document.createElement('div');
-          div.className = `message ${isSent ? 'sent' : ''}`;
-
-          let contentHTML = `<div class="message-content">`;
-          if (m.text) contentHTML += `<div>${m.text}</div>`;
-          if (m.fileUrl) {
-            if (m.type === 'image') {
-              contentHTML += `<img src="${m.fileUrl}" alt="Фото" loading="lazy">`;
-            } else if (m.type === 'video') {
-              contentHTML += `<video src="${m.fileUrl}" controls preload="metadata"></video>`;
-            } else {
-              contentHTML += `
-                <div class="message-file">
-                  <a href="${m.fileUrl}" target="_blank" download>
-                    <i class="fas fa-file"></i> ${m.fileName || 'Файл'}
-                  </a>
-                </div>`;
-            }
+    ensureChatExists(chatId)
+      .then(() => {
+        const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp"));
+        unsubscribeChat = onSnapshot(q, snap => {
+          if (snap.empty) {
+            els.messages.innerHTML = '<div style="padding:40px; text-align:center; color:#777;">Нет сообщений. Напишите первое!</div>';
+            return;
           }
-          contentHTML += `
-            <div class="message-time">
-              ${m.timestamp ? m.timestamp.toDate().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : ''}
-              ${isSent ? ' ✓' : ''}
-            </div>
-          </div>`;
+          els.messages.innerHTML = '';
+          snap.forEach(docSnap => {
+            const m = docSnap.data();
+            const isSent = m.senderId === currentUser.uid;
+            const div = document.createElement('div');
+            div.className = `message ${isSent ? 'sent' : ''}`;
 
-          div.innerHTML = `
-            <img class="avatar" src="${isSent ? (currentUser.photoURL || 'https://ui-avatars.com/api/?name=You') : (m.senderPhotoURL || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User'))}" alt="">
-            ${contentHTML}
-          `;
-          els.messages.appendChild(div);
+            let content = `<div class="message-content">`;
+            if (m.text) content += m.text;
+            if (m.fileUrl) {
+              if (m.type === 'image') {
+                content += `<img src="${m.fileUrl}" alt="Изображение" loading="lazy">`;
+              } else if (m.type === 'video') {
+                content += `<video src="${m.fileUrl}" controls preload="metadata"></video>`;
+              } else {
+                content += `<div class="message-file"><a href="${m.fileUrl}" target="_blank" download><i class="fas fa-file"></i> ${m.fileName || 'Файл'}</a></div>`;
+              }
+            }
+            content += `<div class="message-time">${m.timestamp ? m.timestamp.toDate().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : ''}${isSent ? ' ✓' : ''}</div></div>`;
+
+            div.innerHTML = `
+              <img class="avatar" src="${isSent ? (currentUser.photoURL || `https://ui-avatars.com/api/?name=You`) : (m.senderPhotoURL || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`)}" alt="">
+              ${content}
+            `;
+            els.messages.appendChild(div);
+          });
+          els.messages.scrollTop = els.messages.scrollHeight;
+        }, err => {
+          console.error("Ошибка слушателя чата:", err);
+          let msg = "Ошибка загрузки сообщений";
+          if (err.code === 'permission-denied') msg = "Нет доступа к этому чату (проверьте правила)";
+          showError(msg);
+          els.messages.innerHTML = `<div style="padding:40px; text-align:center; color:#e63946;">${msg}</div>`;
         });
-        els.messages.scrollTop = els.messages.scrollHeight;
-      }, err => {
-        console.error("Chat listener error:", err);
-        let msg = "Ошибка загрузки чата";
-        if (err.code === 'permission-denied') msg = "Нет доступа к этому чату";
-        showError(msg);
-        els.messages.innerHTML = `<div style="padding:40px; text-align:center; color:#e63946;">${msg}</div>`;
+      })
+      .catch(err => {
+        console.error(err);
+        showError("Не удалось открыть чат");
       });
-    }).catch(err => {
-      console.error(err);
-      showError("Не удалось открыть чат");
-    });
   }
 
-  // ─── Отправка сообщения ─────────────────────────────────
+  // Отправка сообщения
   els.sendBtn.onclick = async () => {
     if (!currentUser || !currentChatUser) return showError("Выберите собеседника");
 
     const text = els.messageInput.value.trim();
     const file = els.fileAttach.files[0];
 
-    if (!text && !file) return showError("Напишите сообщение или прикрепите файл");
+    if (!text && !file) return showError("Введите сообщение или прикрепите файл");
 
-    const chatId = [currentUser.uid, currentChatUser.uid].sort().join('_');
+    const sortedUids = [currentUser.uid, currentChatUser.uid].sort();
+    const chatId = sortedUids.join('_');
+
     await ensureChatExists(chatId);
 
     els.sendBtn.disabled = true;
@@ -455,29 +458,31 @@
     try {
       let fileUrl = null;
       let fileName = null;
-      let type = text ? 'text' : 'file';
+      let type = 'text';
 
       if (file) {
-        if (file.size > 10 * 1024 * 1024) throw new Error("Файл слишком большой (макс. 10 МБ)");
+        if (file.size > 10 * 1024 * 1024) throw new Error("Файл > 10 МБ");
         fileName = file.name;
-        const path = `chats/${chatId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `chats/${chatId}/${Date.now()}_${safeName}`;
         const fileRef = ref(storage, path);
         await uploadBytes(fileRef, file);
         fileUrl = await getDownloadURL(fileRef);
 
         if (file.type.startsWith('image/')) type = 'image';
         else if (file.type.startsWith('video/')) type = 'video';
+        else type = 'file';
       }
 
       const msgData = {
-        text: text || (file ? `Прикреплён файл: ${fileName}` : ''),
+        text: text || (file ? `Прикреплён: ${fileName}` : ''),
         senderId: currentUser.uid,
         senderName: currentUser.displayName || 'Пользователь',
         senderPhotoURL: currentUser.photoURL || '',
         timestamp: serverTimestamp(),
         type,
         fileUrl,
-        ИмяФайла
+        fileName
       };
 
       await addDoc(collection(db, "chats", chatId, "messages"), msgData);
@@ -492,10 +497,10 @@
       els.fileAttach.value = '';
       els.attachedFileName.style.display = 'none';
     } catch (err) {
-      console.error(err);
-      let msg = "Не удалось отправить сообщение";
-      if (err.message.includes("10 МБ")) msg = err.message;
-      else if (err.code?.includes("permission-denied")) msg = "Нет прав доступа";
+      console.error("Ошибка отправки:", err);
+      let msg = "Не удалось отправить";
+      if (err.message?.includes("10 МБ")) msg = err.message;
+      if (err.code === 'permission-denied') msg = "Нет прав доступа (правила Firestore)";
       showError(msg);
     } finally {
       els.sendBtn.disabled = false;
@@ -503,12 +508,18 @@
     }
   };
 
+  // Показ имени прикреплённого файла
   els.fileAttach.onchange = () => {
-    const f = els.fileAttach.files[0];
-    els.attachedFileName.textContent = f ? f.name : '';
-    els.attachedFileName.style.display = f ? 'inline' : 'none';
+    const file = els.fileAttach.files[0];
+    if (file) {
+      els.attachedFileName.textContent = file.name;
+      els.attachedFileName.style.display = 'inline';
+    } else {
+      els.attachedFileName.style.display = 'none';
+    }
   };
 
+  // Отправка по Enter
   els.messageInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -516,6 +527,7 @@
     }
   });
 
+  // Закрытие чата
   els.closeChatBtn.onclick = () => {
     currentChatUser = null;
     els.chatSection.style.display = 'none';
