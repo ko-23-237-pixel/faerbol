@@ -1,183 +1,332 @@
-<!-- ... верхняя часть HTML остаётся той же ... -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать заявку</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0066ff;
+            --primary-dark: #0055dd;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #1c1e21;
+            --border: #dddfe2;
+            --danger: #e63946;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 24px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+        }
+        .file-input-wrapper {
+            position: relative;
+        }
+        .file-name {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+        .auth-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
 
-<!-- Внутри блока чата заменить .chat-input на это: -->
-<div class="chat-input">
-    <input type="text" id="messageInput" placeholder="Напишите сообщение...">
-    
-    <!-- Скрепка для прикрепления файла -->
-    <label for="fileAttach" class="file-attach-label" title="Прикрепить файл">
-        <i class="fas fa-paperclip"></i>
-    </label>
-    <input type="file" id="fileAttach" style="display:none;" accept="*/*">
-    
-    <div id="attachedFileName" class="attached-file-name" style="display:none; font-size:0.85rem; color:#555; margin-left:8px;"></div>
-    
-    <button id="sendBtn" class="btn btn-primary">Отправить</button>
+<div class="container">
+    <div class="card">
+
+        <h1>Создать заявку</h1>
+
+        <!-- Блок авторизации -->
+        <div class="auth-section">
+            <div id="loginBlock">
+                <button id="loginBtn" class="btn btn-primary">
+                    <i class="fab fa-google"></i> Войти через Google
+                </button>
+            </div>
+            <div id="userBlock" style="display:none;">
+                <div class="user-info">
+                    <img id="userPhoto" class="avatar" src="" alt="">
+                    <span id="userName"></span>
+                </div>
+                <button id="logoutBtn" class="btn" style="background:#e63946; color:white;">Выйти</button>
+            </div>
+        </div>
+
+        <!-- Форма (показывается только после входа) -->
+        <form id="applicationForm" style="display:none;">
+            <div class="form-group">
+                <label for="fullName">ФИО</label>
+                <input type="text" id="fullName" placeholder="Максим Иванов" required>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Возраст</label>
+                <input type="text" id="age" placeholder="43" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="example@domain.kz" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fileInput">Прикрепить файл</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                </div>
+                <div id="fileName" class="file-name">Файл не выбран</div>
+            </div>
+
+            <div class="form-group">
+                <label for="comment">Комментарий / описание</label>
+                <textarea id="comment" rows="4" placeholder="Дополнительная информация..."></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="width:100%;">
+                Отправить заявку
+            </button>
+        </form>
+
+        <div id="errorContainer" class="error-message" style="display:none;"></div>
+        <div id="successContainer" class="success-message" style="display:none;"></div>
+
+    </div>
 </div>
 
-<!-- Добавь в <style> эти правила -->
-<style>
-    .file-attach-label {
-        cursor: pointer;
-        padding: 10px;
-        color: #666;
-        font-size: 1.3rem;
-        display: flex;
-        align-items: center;
-    }
-    .file-attach-label:hover { color: var(--primary); }
-    .attached-file-name {
-        max-width: 180px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .message img {
-        max-width: 220px;
-        border-radius: 12px;
-        margin-top: 6px;
-        display: block;
-    }
-    .message-file-link {
-        color: #0066ff;
-        text-decoration: underline;
-        font-size: 0.95rem;
-        margin-top: 4px;
-        display: inline-block;
-    }
-    .message-file-link:hover { text-decoration: none; }
-</style>
-
 <script type="module">
-    // ... все предыдущие импорты остаются ...
-
-    // Добавляем импорт Storage
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
     import { 
-        getStorage, 
-        ref, 
-        uploadBytes, 
-        getDownloadURL 
+        getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { 
+        getFirestore, collection, addDoc, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    import { 
+        getStorage, ref, uploadBytes, getDownloadURL 
     } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
-    // Инициализация Storage (добавь после const db = getFirestore(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyBTYxqJJwlH82dnQdIr85j4z-CECBK4xJQ",
+        authDomain: "named-vine-444211-p3.firebaseapp.com",
+        projectId: "named-vine-444211-p3",
+        storageBucket: "named-vine-444211-p3.firebasestorage.app",
+        messagingSenderId: "120244119099",
+        appId: "1:120244119099:web:114c26adfaeb8492325e1e",
+        measurementId: "G-VQ5YQPQB36"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
     const storage = getStorage(app);
 
-    // ... остальной код до функции startChat ...
+    const provider = new GoogleAuthProvider();
 
-    // Внутри startChat, в блоке onSnapshot обработки сообщений — заменить создание div сообщения:
+    // DOM
+    const els = {
+        loginBtn: document.getElementById('loginBtn'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        loginBlock: document.getElementById('loginBlock'),
+        userBlock: document.getElementById('userBlock'),
+        userPhoto: document.getElementById('userPhoto'),
+        userName: document.getElementById('userName'),
+        form: document.getElementById('applicationForm'),
+        fullName: document.getElementById('fullName'),
+        age: document.getElementById('age'),
+        email: document.getElementById('email'),
+        fileInput: document.getElementById('fileInput'),
+        fileName: document.getElementById('fileName'),
+        comment: document.getElementById('comment'),
+        submitBtn: document.getElementById('submitBtn'),
+        errorContainer: document.getElementById('errorContainer'),
+        successContainer: document.getElementById('successContainer')
+    };
 
-    // Внутри snap.forEach(docSnap => { ... })
-    const m = docSnap.data();
-    const sent = m.senderId === currentUser.uid;
+    let currentUser = null;
 
-    const div = document.createElement('div');
-    div.className = `message ${sent ? 'sent' : ''}`;
-
-    let contentHTML = `<div class="message-content">${m.text || ''}`;
-
-    if (m.fileUrl) {
-        if (m.type === 'image') {
-            contentHTML += `<img src="${m.fileUrl}" alt="Прикреплённое изображение">`;
-        } else {
-            contentHTML += `<a href="${m.fileUrl}" target="_blank" class="message-file-link">
-                📎 Скачать ${m.fileName || 'файл'}
-            </a>`;
-        }
+    function showError(msg) {
+        els.errorContainer.textContent = msg;
+        els.errorContainer.style.display = 'block';
+        setTimeout(() => els.errorContainer.style.display = 'none', 7000);
     }
 
-    contentHTML += `
-        <div class="message-time">
-            ${m.timestamp ? m.timestamp.toDate().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : ''}
-        </div>
-    </div>`;
+    function showSuccess(msg) {
+        els.successContainer.textContent = msg;
+        els.successContainer.style.display = 'block';
+        setTimeout(() => {
+            els.successContainer.style.display = 'none';
+            els.form.reset();
+            els.fileName.textContent = "Файл не выбран";
+        }, 5000);
+    }
 
-    div.innerHTML = `
-        <img class="avatar" src="${sent ? currentUser.photoURL : (m.senderPhotoURL || currentChatUser.photoURL)}" alt="">
-        ${contentHTML}
-    `;
-
-    els.messages.appendChild(div);
-
-    // ... scrollTop ...
-
-    // Новая логика отправки сообщения (заменить полностью els.sendBtn.onclick)
-
-    els.sendBtn.onclick = async () => {
-        const text = els.messageInput.value.trim();
-        const file = els.fileAttach.files[0];
-
-        if (!text && !file) return showError('Напишите сообщение или прикрепите файл');
-
-        if (!currentUser || !currentChatUser) return showError('Выберите собеседника');
-
-        const chatId = [currentUser.uid, currentChatUser.uid].sort().join('_');
-
-        els.sendBtn.disabled = true;
-        els.sendBtn.textContent = "Отправка...";
-
+    // Авторизация
+    els.loginBtn.onclick = async () => {
         try {
-            let fileUrl = null;
-            let fileName = null;
-            let messageType = text ? 'text' : 'file';
-
-            if (file) {
-                fileName = file.name;
-                const storagePath = `chat-files/${chatId}/${Date.now()}_${file.name}`;
-                const storageRef = ref(storage, storagePath);
-
-                await uploadBytes(storageRef, file);
-                fileUrl = await getDownloadURL(storageRef);
-
-                // Определяем тип для отображения
-                if (file.type.startsWith('image/')) {
-                    messageType = 'image';
-                }
-            }
-
-            await addDoc(collection(db, "chats", chatId, "messages"), {
-                text: text || (file ? `Прикреплён файл: ${fileName}` : ''),
-                senderId: currentUser.uid,
-                senderName: currentUser.displayName,
-                senderPhotoURL: currentUser.photoURL,
-                timestamp: serverTimestamp(),
-                fileUrl,
-                fileName,
-                type: messageType
-            });
-
-            // Очистка
-            els.messageInput.value = '';
-            els.fileAttach.value = '';
-            els.attachedFileName.style.display = 'none';
-            els.attachedFileName.textContent = '';
-
+            els.loginBtn.disabled = true;
+            await signInWithPopup(auth, provider);
         } catch (err) {
-            console.error(err);
-            showError('Не удалось отправить: ' + err.message);
+            showError("Ошибка входа: " + (err.code === "auth/popup-blocked" ? "Разрешите всплывающие окна" : err.message));
         } finally {
-            els.sendBtn.disabled = false;
-            els.sendBtn.textContent = "Отправить";
+            els.loginBtn.disabled = false;
         }
     };
 
-    // Показываем имя прикреплённого файла
-    els.fileAttach.onchange = () => {
-        const file = els.fileAttach.files[0];
-        if (file) {
-            els.attachedFileName.textContent = file.name;
-            els.attachedFileName.style.display = 'block';
+    els.logoutBtn.onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, user => {
+        currentUser = user;
+
+        if (user) {
+            els.loginBlock.style.display = 'none';
+            els.userBlock.style.display = 'block';
+            els.userPhoto.src = user.photoURL || 'https://via.placeholder.com/48';
+            els.userName.textContent = user.displayName || 'Пользователь';
+            els.form.style.display = 'block';
+
+            // Предзаполняем email
+            els.email.value = user.email || '';
         } else {
-            els.attachedFileName.style.display = 'none';
-        }
-    };
-
-    // Отправка по Enter (без Shift — текст, с Shift+Enter — новая строка)
-    els.messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            els.sendBtn.click();
+            els.loginBlock.style.display = 'block';
+            els.userBlock.style.display = 'none';
+            els.form.style.display = 'none';
         }
     });
 
-    // ... остальной код (closeChat, loadPosts и т.д.) остаётся без изменений ...
+    // Показываем имя выбранного файла
+    els.fileInput.onchange = () => {
+        const file = els.fileInput.files[0];
+        els.fileName.textContent = file ? file.name : "Файл не выбран";
+    };
+
+    // Отправка формы
+    els.form.onsubmit = async (e) => {
+        e.preventDefault();
+        if (!currentUser) return showError("Сначала войдите в аккаунт");
+
+        const fullName = els.fullName.value.trim();
+        const age = els.age.value.trim();
+        const email = els.email.value.trim();
+        const comment = els.comment.value.trim();
+        const file = els.fileInput.files[0];
+
+        if (!fullName || !age || !email) {
+            return showError("Заполните обязательные поля: ФИО, возраст, email");
+        }
+
+        els.submitBtn.disabled = true;
+        els.submitBtn.textContent = "Отправка...";
+
+        try {
+            let fileUrl = null;
+
+            // Если есть файл — загружаем в Storage
+            if (file) {
+                const storageRef = ref(storage, `applications/${currentUser.uid}/${Date.now()}_${file.name}`);
+                const uploadTask = await uploadBytes(storageRef, file);
+                fileUrl = await getDownloadURL(uploadTask.ref);
+            }
+
+            // Сохраняем в Firestore
+            await addDoc(collection(db, "applications"), {
+                userId: currentUser.uid,
+                fullName,
+                age,
+                email,
+                comment,
+                fileUrl,
+                createdAt: serverTimestamp(),
+                status: "new"
+            });
+
+            showSuccess("Заявка успешно отправлена!");
+        } catch (err) {
+            console.error(err);
+            showError("Ошибка при отправке: " + err.message);
+        } finally {
+            els.submitBtn.disabled = false;
+            els.submitBtn.textContent = "Отправить заявку";
+        }
+    };
 </script>
+</body>
+</html>
